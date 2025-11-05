@@ -1,0 +1,76 @@
+services:
+  
+  svc-rabbitmq:
+    image: rabbitmq:3.13.7-management
+    container_name: container_rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: "guest"
+      RABBITMQ_DEFAULT_PASS: "guest"
+    networks:
+      - local_network
+  
+  svc-seed:
+    image: curlimages/curl:7.87.0 # imagem leve que tem curl e sh
+    container_name: container_seed
+    depends_on:
+      - svc-rabbitmq
+    entrypoint: ["/bin/sh", "-c", "/scripts/seed-rabbitmq.sh"]
+    volumes:
+      - ./src/main/resources/scripts/seed-rabbitmq.sh:/scripts/seed-rabbitmq.sh:ro
+    networks:
+      - local_network
+        
+  svc-datalake-postgre:
+    container_name: container-datalake-postgre
+    image: postgres:14-alpine    
+    ports:
+      - 5432:5432
+    volumes:
+      - datalake_db:/var/lib/postgresql/data
+      - ./src/main/resources/scripts/init_database_datalake.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      - POSTGRES_DB=datalake_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    networks:
+      - local_network
+  
+  svc-datawarehouse-postgre:
+    container_name: container-datawarehouse-postgre
+    image: postgres:14-alpine    
+    ports:
+      - 5433:5432
+    volumes:
+      - datawarehouse_db:/var/lib/postgresql/data
+      - ./src/main/resources/scripts/init_datawarehouse.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      - POSTGRES_DB=datawarehouse_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    networks:
+      - local_network
+  
+  svc-database-springbatch-postgre:
+      container_name: container-database-springbatch-postgre
+      image: postgres:14-alpine    
+      ports:
+        - 5434:5432
+      volumes:
+        - database_springbatch_db:/var/lib/postgresql/data
+      environment:
+        - POSTGRES_DB=database_springbatch_db
+        - POSTGRES_USER=postgres
+        - POSTGRES_PASSWORD=postgres
+      networks:
+        - local_network	  
+volumes:
+  datalake_db: {}
+  datawarehouse_db: {}
+  database_springbatch_db: {}
+  
+networks:
+  local_network: { }
+  

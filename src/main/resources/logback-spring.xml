@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	
+	<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} [name=%X{name}] [%thread] %-5level %logger{30} > %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    
+    <root level="INFO">
+        <appender-ref ref="CONSOLE" />
+    </root>
+    <logger name="com.lucianoortizsilva.lote" level="INFO" />
+    <logger name="org.postgresql" level="ERROR" />
+    
+    
+    <logger name="org.springframework.cloud.endpoint" level="OFF"   additivity="false"/>
+    <logger name="org.springframework.jdbc.datasource.init.ScriptUtils" level="WARN"/>
+    <logger name="org.springframework.jdbc.core.JdbcTemplate" level="WARN"/>
+    <logger name="org.springframework.jdbc.core.StatementCreatorUtils" level="WARN"/>
+    
+</configuration>
