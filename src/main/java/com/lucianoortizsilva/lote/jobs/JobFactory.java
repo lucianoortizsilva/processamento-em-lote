@@ -26,6 +26,7 @@ public class JobFactory {
 	@PostConstruct
 	public void init() {
 		strategies.put("livraria", applicationContext.getBean("livrariaJob", Job.class));
+		strategies.put("netflix", applicationContext.getBean("netflixJob", Job.class));
 	}
 
 	public Job getJob(final Payload payload) {
