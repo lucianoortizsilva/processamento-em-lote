@@ -1,9 +1,8 @@
 ## O que é o projeto?
 
-O processamento-em-lote é um sistema de processamento batch implementado com Spring Batch, voltado para ingestão e manipulação de grandes volumes de dados. 
-Usa diferentes fontes de dados para um Data Lake, utilizando orquestração por eventos via RabbitMQ. O objetivo principal é demonstrar, de forma didática, como construir pipelines de ETL com paralelismo, integração assíncrona entre sistemas e uso de diferentes bancos de dados.
-
-Além da parte batch, o projeto conta com uma interface gráfica simples desenvolvida com Java Swing, permitindo ao usuário disparar jobs diretamente pela UI, que publicará mensagens no RabbitMQ e iniciará o fluxo de processamento.
+<p>O processamento-em-lote é um sistema de processamento batch implementado com Spring Batch, voltado para ingestão e manipulação de grandes volumes de dados.</p> 
+<p>Usa diferentes fontes de dados para um Data Lake, utilizando orquestração por eventos via RabbitMQ. O objetivo principal é demonstrar, de forma didática, como construir pipelines de ETL com paralelismo, integração assíncrona entre sistemas e uso de diferentes bancos de dados.</p>
+<p>Além da parte batch, o projeto conta com uma interface gráfica simples desenvolvida com Java Swing, permitindo ao usuário disparar jobs diretamente pela UI, que publicará mensagens no RabbitMQ e iniciará o fluxo de processamento.</p>
 
 ## Tecnologias envolvidas 
 
@@ -36,6 +35,44 @@ Cada step de migração realiza:
 *Escrita:* Os dados lidos (LivroDTO) são inseridos na tabela livro do Data Lake através de um JdbcBatchItemWriter.
 Toda a orquestração do job é feita usando Flow e SimpleAsyncTaskExecutor para garantir o paralelismo dos passos de migração.
 
+<hr>
+
+### Pipeline do Job netflix: 
+```java 
+com.lucianoortizsilva.lote.jobs.netflix.NetflixJobConfig
+```
+O job netflixJob consiste em três etapas principais (steps), executadas sequencialmente, que realizam a carga, transformação e classificação dos dados do catálogo da Netflix.\ 
+Abaixo está o fluxo detalhado desse pipeline:
+
+**Step 1** - Exclusão dos dados atuais (step01DeleteNetflixCatalogo)
+Responsabilidade: Remove todos os registros das tabelas de catálogo do Data Lake e Data Warehouse relacionados à Netflix, garantindo que não haja dados residuais de execuções anteriores.
+Como: 
+- Executa comandos SQL DELETE nas tabelas:
+- netflix_catalogo (Data Lake)
+- netflix_catalogo_documentario (Data Warehouse)
+- netflix_catalogo_comedia (Data Warehouse)
+
+**Step 2** - Carga dos dados a partir do CSV (step02LoadNetflixCatalogo)
+Responsabilidade: Lê os dados do arquivo CSV (arquivos/netflix.csv) e insere todos os registros na tabela netflix_catalogo do Data Lake.
+Como:
+- Reader: Utiliza FlatFileItemReader para ler o CSV, considerando campos como id, title, cast, country, releaseYear, duration, listedIn etc.
+- Writer: Usa JdbcBatchItemWriter para inserir os dados na tabela netflix_catalogo, mapeando diretamente os campos do objeto para as colunas da tabela.
+- Chunk Size: Processa em chunks de2 registros.
+- Execução paralela: Utiliza um pool de threads para acelerar a operação (ThreadPoolTaskExecutor).
+
+**Step 3** - Transformação e classificação dos dados (step03TransformaNetflixCatalogo)
+Responsabilidade: Lê os registros da tabela netflix_catalogo do Data Lake, identifica o gênero do conteúdo e distribui os registros nas tabelas correspondentes do Data Warehouse:
+Tabela netflix_catalogo_documentario para "Documentaries"
+Tabela netflix_catalogo_comedia para "Comedies"
+Como:
+- Reader: Utiliza JdbcCursorItemReader para ler da tabela do Data Lake.
+- Writer: Implementa ClassifierCompositeItemWriter, encaminhando cada item ao writer adequado conforme o gênero identificado no campo listedIn:
+- Se pertencer a "Documentaries", escreve na tabela de documentários.
+- Se pertencer a "Comedies", escreve na tabela de comédias.
+- Se não pertencer a nenhum desses, descarta.
+
+<hr>
+
 ### Detalhes do fluxo assíncrono 
 A interface Swing envia para a fila RabbitMQ uma mensagem contendo o nome do job desejado.
 Um consumidor (RabbitMQConsumer) consome essa mensagem e aciona o job correspondente via Spring Batch, utilizando a fábrica de jobs (JobFactory).
@@ -57,3 +94,4 @@ mvn -Dspring-boot.run.profiles=local spring-boot:run
 O projeto foi configurado para aprendizado/demonstração, e pode ser facilmente expandido para incluir validações, novos passos batch, integração com Data Warehouse e transformações nos dados.
 
 A única entidade atualmente processada é LivroDTO, mas outros fluxos podem ser facilmente adicionados seguindo o padrão do projeto.
+
