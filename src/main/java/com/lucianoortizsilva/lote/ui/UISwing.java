@@ -67,7 +67,8 @@ public class UISwing extends JFrame {
 			comboBox.setName("jobName");
 			final JobName livraria = new JobName("livraria");
 			final JobName netflix = new JobName("netflix");
-			final List<JobName> docTypes = List.of(livraria, netflix);
+			final JobName aviacao = new JobName("aviacao");
+			final List<JobName> docTypes = List.of(livraria, netflix, aviacao);
 			comboBox.removeAllItems();
 			for (final JobName job : docTypes) {
 				comboBox.addItem(job);

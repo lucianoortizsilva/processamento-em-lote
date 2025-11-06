@@ -67,7 +67,7 @@ public class RabbitMQConsumer {
 		try {
 			channel.basicAck(identificador, deletarTodasMensagens);
 			log.info("---------------------------------------------------");
-			log.info("MESSAGE RECEIVED: {}", new Gson().toJson(payload));
+			log.info("MENSAGEM RECEBIDA: {}", new Gson().toJson(payload));
 			log.info("---------------------------------------------------");
 		} catch (final IOException e) {
 			log.error("Error on confirm received of the message from queue", e);
