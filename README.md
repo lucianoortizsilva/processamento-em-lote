@@ -73,6 +73,30 @@ Como:
 
 <hr>
 
+### Pipeline do Job aviação:
+```java 
+com.lucianoortizsilva.lote.jobs.aviacao.AviacaoJobConfig
+```
+
+O job aviacaoJob é responsável por processar grandes volumes de dados de itinerários aéreos, aplicando filtros e transformações, e armazenando apenas informações de voos em classe econômica (Basic Economy) no Data Lake. O pipeline utiliza particionamento e processamento paralelo para alta performance.
+
+O pipeline é composto por duas etapas principais:
+
+**Step1** – Exclusão dos Dados Atuais (step01DeleteAviacao)
+- Responsabilidade: Remove todos os registros existentes da tabela aviacao do Data Lake para garantir reprocessamento idempotente.
+- Como: Implementado por um Tasklet que executa um comando SQL DELETE FROM aviacao.
+
+**Step2** – Migração/Processamento com Partitionamento (step02MigracaoCatalogoAviacaoManager)
+- Responsabilidade: Lê o arquivo CSV de itinerários (arquivos/itinerarios.csv), processa os registros e insere no Data Lake:
+O processamento ocorre em4 partições, cada uma processando aproximadamente12.500 linhas (totalizando50.000 linhas).
+Cada partição executa o step02MigracaoCatalogoAviacaoSlave de forma paralela (ThreadPool de4 threads).
+- Reader: FlatFileItemReader lê uma faixa específica de linhas do CSV conforme a partição.
+- Processor: Filtra apenas voos de classe econômica (Basic Economy) e faz transformações (ex: traduz campos de aeroportos para nomes descritivos, remove duplicidade em nomes de companhias aéreas).
+- Writer: Usa JdbcBatchItemWriter para inserir apenas os registros processados da classe econômica na tabela aviacao do Data Lake.
+Todos os campos esperados: id, flightDate, startingAirport, destinationAirport, segmentsAirlineName.
+
+<hr>
+
 ### Detalhes do fluxo assíncrono 
 A interface Swing envia para a fila RabbitMQ uma mensagem contendo o nome do job desejado.
 Um consumidor (RabbitMQConsumer) consome essa mensagem e aciona o job correspondente via Spring Batch, utilizando a fábrica de jobs (JobFactory).
@@ -94,4 +118,5 @@ mvn -Dspring-boot.run.profiles=local spring-boot:run
 O projeto foi configurado para aprendizado/demonstração, e pode ser facilmente expandido para incluir validações, novos passos batch, integração com Data Warehouse e transformações nos dados.
 
 A única entidade atualmente processada é LivroDTO, mas outros fluxos podem ser facilmente adicionados seguindo o padrão do projeto.
+
 
