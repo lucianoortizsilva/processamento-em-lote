@@ -28,6 +28,7 @@ public class JobFactory {
 		strategies.put("livraria", applicationContext.getBean("livrariaJob", Job.class));
 		strategies.put("netflix", applicationContext.getBean("netflixJob", Job.class));
 		strategies.put("aviacao", applicationContext.getBean("aviacaoJob", Job.class));
+		strategies.put("cinema", applicationContext.getBean("cinemaJob", Job.class));
 	}
 
 	public Job getJob(final Payload payload) {

@@ -1,6 +1,7 @@
 DROP TABLE IF EXISTS livro;
 DROP TABLE IF EXISTS netflix_catalogo;
 DROP TABLE IF EXISTS aviacao;
+DROP TABLE IF EXISTS input_filme;
 
 CREATE TABLE livro (
     id TEXT,
@@ -32,5 +33,13 @@ CREATE TABLE aviacao (
 	startingAirport TEXT,
 	destinationAirport TEXT,
 	segmentsAirlineName TEXT,
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE input_filme (
+    id VARCHAR(100),
+    nome TEXT,
+	ano TEXT,
+	genero TEXT,
     PRIMARY KEY (id)
 );
