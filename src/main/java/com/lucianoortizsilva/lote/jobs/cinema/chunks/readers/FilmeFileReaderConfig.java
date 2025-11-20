@@ -15,7 +15,7 @@ public class FilmeFileReaderConfig {
 	FlatFileItemReader<FilmeVO> peopleFileReader() {
 		return new FlatFileItemReaderBuilder<FilmeVO>()//
 				.name("peopleFileReader")//
-				.resource(new FileSystemResource("files/people.csv"))//
+				.resource(new FileSystemResource("arquivos/filmes_id.csv"))//
 				.delimited()//
 				.names("id")//
 				.addComment("--")//

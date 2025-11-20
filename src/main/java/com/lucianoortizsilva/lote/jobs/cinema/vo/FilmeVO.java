@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class FilmeVO {
 	
-	private String id;
+	private int id;
 	private String nome;
 	private String ano;
 	private String gênero;
